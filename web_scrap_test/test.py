@@ -2,52 +2,36 @@ import requests
 from bs4 import BeautifulSoup
 
 # 요청할 URL
-url = 'https://news.naver.com/section/104'
+url = 'https://news.naver.com/section/103'
 
 # GET 요청 보내기
-response = requests.get(url)
+resp = requests.get(url)
 
-html = """
-<nav class="menu-box-1" id="menu-box">
-  <ul>
-    <li>
-      <a class="menu-item-text" href="https://www.naver.com">네이버로 이동</a>
-    </li>
-    <li>
-      <a class="menu-item-text" href="https://www.google.com">구글로 이동</a>
-    </li>
-    <li>
-      <a class="menu-item-text" href="https://www.daum.net">다음으로 이동</a>
-    </li>
-  </ul>
-</nav>
-"""
-
-# HTML 파싱
-bs = BeautifulSoup(html, 'html.parser')
-
-# print(bs.select_one('.menu-item-text')) -> 클래스가 `menu-item-text`인 녀석을 선택
-# print(bs.select_one('#menu-item-text')) -> id가 `menu-item-text`인 녀석을 선택
-
-# find, find_all
-# find : 조건과 일치하는 모든 요소중에 검색 된 첫번째 요소를 반환
-print(bs.find('a', class_='menu-item-text'))
-
-# find_all : 조건과 일치하는 모든 요소의 리스트를 반환
-print(bs.find_all('a', class_='menu-item-text'))
-
-menu_item_text = bs.find_all('a', class_='menu-item-text')
-
-for idx, el in enumerate(menu_item_text):
-  no = idx +  1
-  print(f"{no} : {el.get_text()}")
-  
-print(bs.find(id="menu-box"))  
-print(bs.find('nav', attrs={'id': 'menu-box'}))
-
-'''
 # 응답 상태 코드 확인 (200은 성공을 의미)
-print(response.status_code)  # 200
-# 응답의 HTML 내용 출력
-print(response.text)
-'''
+result_status = resp.status_code
+
+if result_status == 200:
+  # HTML 파싱
+  bs = BeautifulSoup(resp.text, 'html.parser')
+  
+news_tit_el = bs.select('.sa_text_strong')
+
+print("== 헤드라인 뉴스 타이틀 출력 ==")
+for idx, news_title in enumerate(news_tit_el):
+  no = idx + 1
+  print(f"{no} : {news_title.get_text()}")
+print("== 헤드라인 뉴스 타이틀 출력 끝 ==")  
+
+# 검색 키워드 추출 시작
+search_keyword = "폭염" # 키워드
+keyword_news_list = []
+for title in news_tit_el:
+  if search_keyword in title.get_text():    
+    keyword_news_list.append(title.get_text())
+# 검색 키워드 추출 끝
+    
+# 검색 내용 출력    
+print("== 검색 내용 출력 ==")  
+for idx, news_title in enumerate(keyword_news_list):
+  no = idx + 1
+  print(f"{no} : {news_title}")
